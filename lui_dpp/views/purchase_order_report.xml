@@ -1,0 +1,565 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data>
+
+        <template id="po_header" name="po_header">
+            <div class="header">
+                <div class="row">
+                    <div class="col-1">
+                        <img t-if="s.env.company.logo" t-att-src="image_data_uri(s.env.company.logo)" width="150%"/>
+                    </div>
+                    <div class="col-8">
+                        <table style="margin-left: 40px;" class="table-borderless">
+                            <tr>
+                                <td colspan="3">
+                                    <strong style="font-size: 18px;">
+                                        <t t-esc="s.company_id.name"/>
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr style="font-size: 15px;">
+                                <td width="15%">
+                                Alamat
+                                </td>
+                                <td width="5%"> : </td>
+                                <td width="80%">
+                                    <t t-if="s.company_id">
+                                        <!-- <div t-field="s.company_id.partner_id" t-options='{"widget": "contact", "fields": ["address"], "no_marker": True, "phone_icons": True}' name="partner_address"/> -->
+                                        <t t-if="s.company_id.street">
+                                            <t t-esc="s.company_id.street"/>
+                                        </t>
+                                        <t t-if="s.company_id.street2">
+                                            <br></br>
+                                            <t t-esc="s.company_id.street2"/>
+                                        </t>
+                                        <t t-if="s.env.company.city and not s.env.company.state_id">
+                                            <br></br>
+                                            <t t-esc="s.env.company.city"/>
+                                        </t>
+                                        <t t-elif="s.env.company.state_id and not s.env.company.city">
+                                            <br></br>
+                                            <t t-esc="s.env.company.state_id.name"/>
+                                        </t>
+                                        <t t-else="">
+                                            <br></br>
+                                            <t t-esc="s.env.company.city"/>
+                                        </t>
+                                        <t t-if="s.company_id.zip">
+                                            <t t-esc="s.company_id.zip"/>
+                                        </t>
+
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr style="font-size: 15px;">
+                                <td width="15%">
+                                    <span>NPWP</span>
+                                </td>
+                                <td width="5%"> : </td>
+                                <td width="80%">
+                                    <t t-esc="s.company_id.vat"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-2 offset-1">
+                        <div class="row">
+                            <table width="100%">
+                                <tr style="font-size:17px;">
+                                    <td style="background-color:green; padding-top:2px;">
+                                        <strong>
+                                            <center style="vertical-align: baseline; color: white;">
+                                        No : <t t-esc="s.name"/>
+                                            </center>
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-1">
+                    <center>
+                        <strong style="font-size: 22px;">
+                                    PURCHASE ORDER
+                        </strong>
+                        <div style='width: 100%; height: 1px; border: 1px solid black;' />
+                    </center>
+                </div>
+            </div>
+        </template>
+
+        <template id="po_page" name="po_page">
+            <style>
+                table tr {
+                    font-size: 15px;
+                }
+                table.desc tr td {
+                    padding: 0; 
+                    margin: 0;
+                }
+                .br {
+                    border: 1px solid black;
+                }
+            </style>
+            <!-- This br is use when the paperformat is not using A4 -->
+            <!-- <br></br>
+            <br></br>
+            <br></br> 
+            <br></br>
+            <br></br>
+            <br></br> -->
+            <br></br>
+            <div class="page">
+                <div class="rows">
+                    <div class="cols-6">
+                        <table class="align-top" width="100%">
+                            <tr>
+                                <td width="10%">Kepada</td>
+                                <td width="3%">:</td>
+                                <td width="37%">
+                                    <t t-esc="s.partner_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="10%">Alamat</td>
+                                <td width="3%">:</td>
+                                <td width="37%">
+                                    <t t-if="s.partner_id.street">
+                                        <t t-esc="s.partner_id.street"/>
+                                    </t>
+                                    <t t-if="s.partner_id.street2">
+                                        <span>,                                            
+                                            <t t-esc="s.partner_id.street2"/>
+                                        </span>
+                                    </t>
+                                    <t t-if="s.partner_id.city and not s.partner_id.state_id">
+                                        <span>,
+                                            <t t-esc="s.partner_id.city"/>
+                                        </span>
+                                    </t>
+                                    <t t-elif="s.partner_id.state_id and not s.partner_id.city">
+                                        <span>,
+                                            <t t-esc="s.partner_id.state_id.name"/>
+                                        </span>
+                                    </t>
+                                    <t t-else="">
+                                        <span>,
+                                            <t t-esc="s.partner_id.city"/>
+                                        </span>
+                                    </t>
+
+                                    <!-- <t t-if="s.partner_id.zip">
+                                        <span>,                                            
+                                            <t t-esc="s.partner_id.zip"/>
+                                        </span>
+                                    </t> -->
+                                    <t t-if="s.partner_id.country_id">
+                                        <span>,                                            
+                                            <t t-esc="s.partner_id.country_id.name"/>
+                                        </span>
+                                    </t>
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td width="10%">Telp</td>
+                                <td width="3%">:</td>
+                                <td width="37%">
+                                    <t t-esc="s.partner_id.phone"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="10%">Attn.</td>
+                                <td width="3%">:</td>
+                                <td width="37%">
+                                     <t t-esc="s.contact_id.name"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                    <div class="cols-6" width="100%">
+                        <table class="align-top">
+                            <tr>
+                                <td width="10%">Ship To</td>
+                                <td width="3%">:</td>
+                                <td width="37%">
+                                    <t t-esc="s.company_id.name"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="10%">Alamat</td>
+                                <td width="3%">:</td>
+                                <td width="37%">
+                                    <t t-if="s.company_id.street">
+                                        <t t-esc="s.company_id.street"/>
+                                    </t>
+                                    <t t-if="s.company_id.street2">
+                                        <span>,                                            
+                                            <t t-esc="s.company_id.street2"/>
+                                        </span>
+                                    </t>
+                                    <t t-if="s.env.company.city and not s.env.company.state_id">
+                                        <span>,
+                                            <t t-esc="s.env.company.city"/>
+                                        </span>
+                                    </t>
+                                    <t t-elif="s.env.company.state_id and not s.env.company.city">
+                                        <span>,
+                                            <t t-esc="s.env.company.state_id.name"/>
+                                        </span>
+                                    </t>
+                                    <t t-else="">
+                                        <span>,
+                                            <t t-esc="s.env.company.city"/>
+                                        </span>
+                                    </t>
+
+                                    <t t-if="s.company_id.zip">
+                                        <span>,                                            
+                                            <t t-esc="s.company_id.zip"/>
+                                        </span>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="10%">Telp</td>
+                                <td width="3%">:</td>
+                                <td width="37%">
+                                    <t t-esc="s.company_id.phone"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="10%">Attn.</td>
+                                <td width="3%">:</td>
+                                <td width="37%">
+                                    <t t-esc="s.create_uid.name"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <br></br>
+
+                <div class="rows">
+                    <div class="cols-12">
+                        <table class="desc">
+                            <tr>
+                                <td>
+                                    <strong>
+                            Dear Sir/Mrs/Ms
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                Reference your quotation letter <strong>No : 
+                                    <span>
+                                        <t t-esc="s.partner_ref"/>
+                                    <!-- , -->
+                                    </span> 
+                                </strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                            The rates offered by your firm have been found to be minim and the term and conditions offered by your firm have been accepted.                            <br></br>
+                            Kindly supply the following material (goods or services) on term and condition already agreed uppon
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div style="margin-left: 43%;">
+                </div>
+            </div>
+
+            <style>
+                    .align-right {
+                        text-align: right;
+                    }
+                    .align-center {
+                        text-align: center;
+                    }
+                    .pr {
+                        padding-right: 3px;
+                    }
+                    .baseline {
+                        vertical-align: baseline;
+                    }
+                    .py {
+                        padding-bottom: 3px; padding-top: 3px
+                    }
+            </style>
+
+            <div class="rows">
+                <table width="100%" style="border-collapse: collapse;">
+                    <tr>
+                        <td class="br" style="background-color: #e5e7e9; font-style: italic;" width="8%">
+                            <center>No</center>
+                        </td>
+                        <td class="br" style="background-color: #e5e7e9; font-style: italic;" width="18%">
+                            <center>Part Number</center>
+                        </td>
+                        <td class="br" style="background-color: #e5e7e9; font-style: italic;" width="38%">
+                            <center>Description</center>
+                        </td>
+                        <td class="br" style="background-color: #e5e7e9; font-style: italic;" width="8%">
+                            <center>Qty</center>
+                        </td>
+                        <td class="br" style="background-color: #e5e7e9; font-style: italic;" width="15%">
+                            <center>Price / Unit</center>
+                        </td>
+                        <td class="br" style="background-color: #e5e7e9; font-style: italic;" width="15%">
+                            <center>Total Price</center>
+                        </td>
+                    </tr>
+                    <t t-set="no" t-value="0" />
+                    <t t-foreach="s.order_line" t-as="line">
+                        <t t-set="no" t-value="no+1" />
+                        <tr style="height: 28px;">
+                            <td class="br align-center">
+                                <center>
+                                    <t t-esc="no" />
+                                </center>
+                            </td>
+                            <td class="br align-center">
+                                <center>
+                                    <t t-esc="line.product_id.default_code" />
+                                </center>
+                            </td>
+                            <td class="br align-center">
+                                <center>
+                                    <t t-esc="line.name" />
+                                </center>
+                            </td>
+                            <td class="br align-center">
+                                <center>
+                                    <t t-esc="int(line.product_qty)" />
+                                </center>
+                            </td>
+                            <td class="br align-right pr">
+                                <t t-esc="currency_symbol"/>
+                                <t t-esc="'{:,}'.format(int(line.price_unit))"/>
+
+                            </td>
+                            <td class="br align-right pr">
+                                <t t-esc="currency_symbol"/>
+                                <t t-esc="'{:,}'.format(int(line.price_subtotal))"/>
+                            </td>
+                        </tr>
+                    </t>
+                    <tr t-if="s.tax_base_amount">
+                        <td colspan="4"></td>
+                        <td class="baseline align-right pr">
+                            <span>Sub Total</span>
+                        </td>
+                        <td class="br baseline align-right pr" style ="width: 30%;">
+                            <t t-esc="currency_symbol"/>
+                            <t t-esc="'{:,}'.format(int(s.amount_untaxed))"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4"></td>
+                        <td class='baseline align-right pr'>
+                            <span> DPP Nilai Lain </span>
+                        </td>
+                        <td class="br baseline align-right pr">
+                            <t t-esc="currency_symbol"/>
+                            <t t-esc="'{:,}'.format(int(s.tax_base_amount))"/>
+                        </td>
+                    </tr>
+                    <t t-set="tr" t-value="3"/>
+                    <t t-foreach="s.tax_totals.get('groups_by_subtotal').get('Untaxed Amount')" t-as="tax_line">
+                        <tr>
+                            <td colspan="4"></td>
+                            <td class="baseline align-right pr">
+                                <span>
+                                    <t t-esc="tax_line.get('tax_group_name')"/>
+                                </span>
+                            </td>
+                            <td class="br baseline align-right pr">
+                                <t t-esc="currency_symbol"/>
+                                <t t-esc="'{:,}'.format(int(tax_line.get('tax_group_amount')))"/>
+
+                            </td>
+                        </tr>
+                        <t t-set="tr" t-value="tr+1"/>
+                    </t>
+                    <tr>
+                        <td colspan="4"></td>
+                        <td class='baseline align-right pr'>
+                            <span>
+                                <strong>Grand Total</strong>
+                            </span>
+                        </td>
+                        <td class="br baseline align-right pr">
+                            <t t-esc="currency_symbol"/>
+                            <t t-esc="'{:,}'.format(int(s.amount_total))"/>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <br></br>
+            <div class="rows">
+                <table class="br" width="100%" style="border-collapse: collapse;">
+                    <tr style="background-color: #e5e7e9">
+                        <td class="br py" width="50%" style="background-color:green;">
+                            <center style="color: white;">Term &amp; Condition</center>
+                        </td>
+                        <td class="br py" width="50%" style="background-color:green;">
+                            <center style="color: white;">Term Of Payment</center>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="br" style="height: 80px;"></td>
+                        <td class="br" style="height: 80px;"></td>
+                    </tr>
+                </table>
+            </div>
+            <br>
+            </br>
+
+            </div>
+        </template>
+
+    <template id="po_footer" name="po_footer">
+        <div class="footer">
+            <div class="rows">
+                <table class="table-borderless" width="100%">
+                    <tr>
+                        <td style="text-align:center;">
+                            <!-- <u style="margin-left:10%;">Yudhistira</u> -->
+                            <t t-esc="s.user_id.partner_id.name"/>
+                        </td>
+                        <td style="text-align:center;">
+                            <!-- <u style="text-align:center;">Arief R.Aris</u> -->
+                            <t t-esc="s.approved_by_user_id.partner_id.name"/>
+                        </td>
+                        <td style="text-align:center;">
+                            <!-- <u style="margin-left:20%;">D . Annur Sofyan</u> -->
+                            <t t-esc="s.company_id.director_id.name"/>
+                        </td>
+                        <td style="text-align:center;">
+                            <u>
+                                <t t-esc="s.date_approve.strftime('%d-%m-%Y')"/>
+                            </u>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align:center;">
+                            <strong> Purchasing </strong>
+                        </td>
+                        <td style="text-align:center;">
+                            <strong> Finance Manager </strong>
+                        </td>
+                        <td style="text-align:center;">
+                            <strong> Authorized by </strong>
+                        </td>
+                        <td style="text-align:center;">
+                            <strong>Date</strong>
+                        </td>
+                    </tr>
+                </table>
+                <br></br>
+                <span width="95%">
+                    <center>
+                        <i>
+                            <t t-esc="s.company_id.name"/>
+                            <t t-if="s.company_id.street">
+                                <t t-esc="s.company_id.street"/>
+                            </t>
+                            <t t-if="s.company_id.street2">
+                                <span>,
+                                    <t t-esc="s.company_id.street2"/>
+                                </span>
+                            </t>
+                            <t t-if="s.company_id.city">
+                                <span>,
+                                    <t t-esc="s.company_id.city"/>
+                                </span>
+                            </t>
+                            <!-- <t t-if="s.company_id.state_id">
+                                    <span>,
+                                        <t t-esc="s.company_id.state_id.name"/>
+                                    </span>
+                                </t> -->
+                            <t t-if="s.company_id.zip">
+                                <span>
+                                    <t t-esc="s.company_id.zip"/>
+                                </span>
+                            </t>
+                            <t t-if="s.company_id.country_id">
+                                <span>,
+                                    <t t-esc="s.company_id.country_id.name"/>
+                                </span>
+                            </t>
+                            <span>, Telp <t t-esc="s.company_id.phone" />
+                            </span>
+                            <span>,                                <t t-esc="s.company_id.website" />
+                            </span>
+                        </i>
+                    </center>
+                </span>
+            </div>
+        </div>
+    </template>
+
+    <template id="report_purchaseorder_document_inherit_dpp" inherit_id="purchase.report_purchaseorder_document">
+        <!-- Menambahkan field tax_base_amount setelah Untaxed Amount -->
+        <xpath expr="//div[@id='total']/div/table/tr[1]" position="after">
+            <tr t-if="o.tax_totals">
+                <td name="td_tax_base_amount_label"><strong>Tax Base Amount</strong></td>
+                <td name="td_tax_base_amount_amount" class="text-end">
+                    <span t-field="o.tax_base_amount"
+                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                </td>
+            </tr>
+        </xpath>
+    </template>
+
+    <!-- Inherit RFQ report juga -->
+    <template id="report_purchasequotation_document_inherit_dpp" inherit_id="purchase.report_purchasequotation_document">
+        <xpath expr="//div[@id='total']/div/table/tr[1]" position="after">
+            <tr t-if="o.tax_totals">
+                <td name="td_tax_base_amount_label"><strong>Tax Base Amount</strong></td>
+                <td name="td_tax_base_amount_amount" class="text-end">
+                    <span t-field="o.tax_base_amount"
+                          t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                </td>
+            </tr>
+        </xpath>
+    </template>
+
+    <template id="purchase_order_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="s">
+                <t t-set="currency_symbol" t-value="s.currency_id.symbol"/>
+                <style>
+                        .cols-6 {
+                            -webkit-box-flex: 1;
+                            -webkit-flex: 1;
+                            flex: 1;
+                        }
+                        .rows {
+                            display: -webkit-box; /* wkhtmltopdf uses this one */
+                            display: -webkit-flex;
+                            display: flex;
+                        }
+                        table.align-top, table.align-top tr, table.align-top tr td {
+                          vertical-align: top;
+                        }
+                </style>
+
+                <t t-call="ab_report.po_header"/>
+                <t t-call="ab_report.po_page"/>
+                <t t-call="ab_report.po_footer"/>
+
+            </t>
+        </t>
+    </template>
+
+
+</data>
+</odoo>

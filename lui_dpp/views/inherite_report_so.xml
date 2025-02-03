@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_saleorder_custom" inherit_id="sale.report_saleorder_document">
+        <!-- Hapus Kolom Taxes -->
+        <xpath expr="//th[@name='th_taxes']" position="replace"/>
+        <xpath expr="//td[@name='td_taxes']" position="replace"/>
+
+        <!-- Tambahkan Kolom Tax Base Amount -->
+        <!-- <xpath expr="//table[@class='table table-sm o_main_table table-borderless mt-4']/thead/tr" position="inside">
+            <th class="text-end">Tax Base Amount</th>
+        </xpath>
+        <xpath expr="//table[@class='table table-sm o_main_table table-borderless mt-4']/tbody/tr" position="inside">
+            <td class="text-end">
+                <span t-field="line.tax_base_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/>
+            </td> -->
+        </xpath>
+    </template>
+</odoo>

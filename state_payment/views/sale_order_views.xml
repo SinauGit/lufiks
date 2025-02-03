@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_tree_payment_status" model="ir.ui.view">
+        <field name="name">sale.order.tree.payment.status</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <field name="invoice_status" position="attributes">
+                <attribute name="decoration-success">invoice_status == 'full_payment'</attribute>
+                <attribute name="decoration-warning">invoice_status == 'partial_payment'</attribute>
+                <attribute name="decoration-info">invoice_status == 'invoiced'</attribute>
+            </field>
+        </field>
+    </record>
+</odoo> 

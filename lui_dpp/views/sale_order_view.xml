@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_order_tree_inherit" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit.dpp</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount_untaxed']" position="after">
+                <field name="tax_base_amount" optional="show" sum="Total Tax Base"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_order_form_inherit" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.dpp</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='tax_totals']" position="before">
+                <field name="tax_base_amount" 
+                       widget="monetary" 
+                       options="{'currency_field': 'currency_id'}"
+                       attrs="{'invisible': [('tax_totals', '=', False)]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo> 
