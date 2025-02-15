@@ -1,5 +1,5 @@
 {
-    'name': ' Atur Deskirpsi di SO',
+    'name': ' Atur Deskirpsi di SO dan PO',
     'version': '1.0',
     'category': '',
     'summary': '',
