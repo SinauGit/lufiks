@@ -1,5 +1,5 @@
 {
-    'name': ' Atur Deskirpsi di SO dan PO',
+    'name': ' Atur Deskirpsi di SO, PO dan Field Up',
     'version': '1.0',
     'category': '',
     'summary': '',
@@ -7,9 +7,11 @@
     'depends': [
         'base',
         'sale',
+        'purchase',
     ],
     'license': 'LGPL-3',
     'data': [
+        'views/sale_order_views.xml',
     ],
     'installable': True,
     'application': False,

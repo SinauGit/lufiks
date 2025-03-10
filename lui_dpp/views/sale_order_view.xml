@@ -22,7 +22,7 @@
                 <field name="tax_base_amount" 
                        widget="monetary" 
                        options="{'currency_field': 'currency_id'}"
-                       attrs="{'invisible': [('tax_totals', '=', False)]}"/>
+                       invisible="1"/>
             </xpath>
         </field>
     </record>

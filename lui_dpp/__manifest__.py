@@ -8,7 +8,7 @@
     'depends': ['account', 'sale', 'purchase'],
     'data': [
         'views/account_move_view.xml',
-        'views/sale_order_view.xml',
+        # 'views/sale_order_view.xml',
         'views/purchase_order_view.xml',
         # 'views/inherite_report_so.xml',
         # 'views/inherite_report_so_action.xml',

@@ -37,15 +37,19 @@
                     </h4>
                     <!-- Mengganti div informasi dengan layout baru 4 kolom sejajar -->
                     <div class="row" style="font-size: 12px; margin-bottom: 20px;">
-                        <!-- Kolom Your Reference -->
+                        <!-- Kolom Your Reference/Up -->
                         <div class="col-3">
                             <div class="row">
                                 <div class="col-12">
-                                    <strong>Your Reference</strong>
+                                    <strong t-if="doc.state in ['draft', 'sent']">Up</strong>
+                                    <strong t-else="">Your Reference</strong>
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-12">
+                                <div class="col-12" t-if="doc.state in ['draft', 'sent']">
+                                    <span t-field="doc.up_field"/>
+                                </div>
+                                <div class="col-12" t-if="doc.state not in ['draft', 'sent']">
                                     <span t-if="doc.client_order_ref" t-field="doc.client_order_ref"/>
                                 </div>
                             </div>
@@ -137,7 +141,7 @@
                             <th name="th_quantity" class="text-center">Qty</th>
                             <th name="th_uom" class="text-center" style="width: 3%;">UoM</th>
                             <th name="th_priceunit" class="text-center">Unit Price</th>
-                            <th name="th_discount" t-if="display_discount" class="text-center">
+                            <th name="th_discount" t-if="display_discount and doc.type_discount_print == 'Line'" class="text-center">
                                 <span>Disc.%</span>
                             </th>
                             <th name="th_subtotal" class="text-center">Amount</th>
@@ -165,7 +169,7 @@
                                     <td name="td_priceunit" class="text-end">
                                         <span t-field="line.price_unit"/>
                                     </td>
-                                    <td t-if="display_discount" class="text-end">
+                                    <td t-if="display_discount and doc.type_discount_print == 'Line'" class="text-end">
                                         <span t-field="line.discount" t-options="{'widget': 'float', 'precision': 0}"/>
                                     </td>
                                     <t t-if="False">
@@ -215,6 +219,13 @@
                                 <span t-field="doc.amount_untaxed" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
                             </td>
                         </tr>
+                        <!-- Discount - hanya tampil jika type_discount_print = total -->
+                        <tr t-if="doc.type_discount_print == 'total'">
+                            <td style="padding: 2px; color: black;">Discount</td>
+                            <td class="text-end" style="padding: 2px;">
+                                <span t-field="doc.amount_discount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                        </tr>
                         <!-- DPP Nilai Lain -->
                         <tr>
                             <td style="padding: 2px; color: black;">DPP Nilai Lain</td>
@@ -224,7 +235,7 @@
                         </tr>
                         <!-- Taxes -->
                         <tr>
-                            <td style="padding: 2px; color: black;">Taxes</td>
+                            <td style="padding: 2px; color: black;">PPN</td>
                             <td class="text-end" style="padding: 2px;">
                                 <span t-field="doc.amount_tax" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
                             </td>
