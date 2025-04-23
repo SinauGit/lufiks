@@ -8,6 +8,25 @@
             <field name="payment_term_id" position="after">
                 <field name="up_field"/>
             </field>
+            
+            <!-- Tambahkan tombol untuk sinkronisasi nama dari invoice line -->
+            <!-- <xpath expr="//field[@name='order_line']/tree" position="inside">
+                <button name="sync_name_from_invoice_line" string="Sync Name from Invoice" type="object" icon="fa-refresh" class="text-success"/>
+            </xpath> -->
+            
+            <!-- Tambahkan field original_name di form line -->
+            <xpath expr="//field[@name='order_line']/form//field[@name='name']" position="after">
+                <field name="original_name" groups="base.group_no_one"/>
+                <button name="restore_original_name" string="Restore Original Name" type="object" 
+                        class="oe_link" groups="base.group_no_one"
+                        attrs="{'invisible': [('original_name', '=', False)]}"
+                        help="Kembalikan deskripsi ke nilai aslinya sebelum diubah dari invoice"/>
+            </xpath>
+            
+            <!-- Tambahkan tombol pada form sale order -->
+            <!-- <button name="action_confirm" position="before">
+                <button name="action_sync_all_lines" string="Sync All Names from Invoices" type="object" class="btn-secondary" attrs="{'invisible': [('state', 'in', ['draft', 'sent'])]}"/>
+            </button> -->
         </field>
     </record>
 </odoo> 

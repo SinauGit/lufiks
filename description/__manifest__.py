@@ -1,5 +1,5 @@
 {
-    'name': ' Atur Deskirpsi di SO, PO dan Field Up',
+    'name': ' Atur Deskirpsi di SO, PO, Field Up dan ubah deskripsi invoice berubah juga di so',
     'version': '1.0',
     'category': '',
     'summary': '',
