@@ -19,7 +19,7 @@
                     <group name="note_group" col="6">
                         <group name="discount" colspan="2">
                             <field name="discount_type"
-                                   groups="product.group_discount_per_so_line" invisible="1"/>
+                                   groups="product.group_discount_per_so_line"/>
                             <field name="discount_rate"
                                    groups="product.group_discount_per_so_line"/>
                         </group>

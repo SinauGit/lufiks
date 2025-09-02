@@ -30,7 +30,7 @@ class SaleOrder(models.Model):
             })
 
     discount_type = fields.Selection(
-        [('percent', 'Percentage'), ('amount', 'Amount')],
+        [('perline', 'Per Line'),('percent', 'Percentage'), ('amount', 'Amount')],
         string='Discount type',
         readonly=True,
         states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},

@@ -8,13 +8,6 @@
             <field name="payment_term_id" position="after">
                 <field name="up_field"/>
             </field>
-            
-            <!-- Tambahkan tombol untuk sinkronisasi nama dari invoice line -->
-            <!-- <xpath expr="//field[@name='order_line']/tree" position="inside">
-                <button name="sync_name_from_invoice_line" string="Sync Name from Invoice" type="object" icon="fa-refresh" class="text-success"/>
-            </xpath> -->
-            
-            <!-- Tambahkan field original_name di form line -->
             <xpath expr="//field[@name='order_line']/form//field[@name='name']" position="after">
                 <field name="original_name" groups="base.group_no_one"/>
                 <button name="restore_original_name" string="Restore Original Name" type="object" 
