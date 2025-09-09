@@ -20,6 +20,10 @@ class SaleOrderLine(models.Model):
         """Check that the fixed discount and the discount percentage are consistent."""
         precision = self.env["decimal.precision"].precision_get("Discount")
         for line in self:
+            # Skip validation jika dalam proses supply_rate dari header
+            if line.order_id and line.order_id.discount_type in ('percent', 'amount'):
+                continue
+                
             if line.discount_fixed and line.discount:
                 calculated_fixed_discount = float_round(
                     line._get_discount_from_fixed_discount(),
@@ -43,6 +47,20 @@ class SaleOrderLine(models.Model):
                             "discount": line.discount,
                         }
                     )
+
+    @api.onchange("discount")
+    def _onchange_discount_percent(self):
+        """Sinkron dari percent -> fixed (per unit)"""
+        if self.env.context.get("ignore_discount_onchange"):
+            return
+        if not self.price_unit:
+            self.discount_fixed = 0.0
+            return
+        with self.env.protecting(["discount_fixed"], self):
+            self.discount_fixed = float_round(
+                (self.discount or 0.0) * self.price_unit / 100.0,
+                precision_digits=self.env["decimal.precision"].precision_get("Product Price"),
+            )
 
     def _convert_to_tax_base_line_dict(self):
         """Prior to calculating the tax toals for a line, update the discount value
@@ -75,12 +93,16 @@ class SaleOrderLine(models.Model):
 
         return super()._convert_to_tax_base_line_dict()
 
-    @api.onchange("discount_fixed", "price_unit")
+    @api.onchange("discount_fixed")
     def _onchange_discount_fixed(self):
-        if not self.discount_fixed:
+        """Sinkron dari fixed -> percent"""
+        if self.env.context.get("ignore_discount_onchange"):
             return
-
-        self.discount = self._get_discount_from_fixed_discount()
+        if not self.price_unit:
+            self.discount = 0.0
+            return
+        with self.env.protecting(["discount"], self):
+            self.discount = self._get_discount_from_fixed_discount()
 
     def _get_discount_from_fixed_discount(self):
         """Calculate the discount percentage from the fixed discount amount."""

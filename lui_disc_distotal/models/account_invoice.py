@@ -5,18 +5,55 @@ class AccountInvoice(models.Model):
     _inherit = "account.move"
 
     discount_type = fields.Selection(
-        [('percent', 'Percentage'), ('amount', 'Amount')],
-        string='Discount type',
-        readonly=True,
-        states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},
-        default='percent')
+        [('perline','Per Line'), ('percent','Percentage'), ('amount','Amount')],
+        string='Discount type', default='perline',
+        readonly=True, states={'draft':[('readonly',False)], 'sent':[('readonly',False)]}
+    )
     discount_rate = fields.Float('Discount Rate', digits=(16, 2),
                                  readonly=True,
                                  states={'draft': [('readonly', False)],
                                          'sent': [('readonly', False)]})
-    amount_discount = fields.Monetary(string='Discount', store=True,
-                                      compute='_compute_amount', readonly=True,
-                                      track_visibility='always')
+    amount_discount = fields.Monetary(string='Discount', store=True, readonly=True,
+                                      compute='_compute_amount_discount', tracking=True)
+
+    @api.depends('invoice_line_ids.price_unit','invoice_line_ids.quantity',
+                 'invoice_line_ids.price_subtotal','invoice_line_ids.display_type','currency_id')
+    def _compute_amount_discount(self):
+        for inv in self:
+            inv.amount_discount = sum(
+                max(l.quantity*l.price_unit - l.price_subtotal, 0.0)
+                for l in inv.invoice_line_ids
+                if l.display_type in (False, 'product')
+            )
+
+    @api.onchange('discount_type','discount_rate','invoice_line_ids')
+    def _supply_rate(self):
+        for inv in self:
+            lines = inv.invoice_line_ids.filtered(lambda l: l.display_type in (False, 'product'))
+            if not lines:
+                continue
+
+            if inv.discount_type == 'percent':
+                for line in lines:
+                    line.discount = inv.discount_rate or 0.0
+                    # Hitung discount_fixed berdasarkan persentase
+                    line.discount_fixed = (line.price_unit * line.discount / 100.0) if line.price_unit else 0.0
+
+            elif inv.discount_type == 'amount':
+                total_base = sum(l.quantity * l.price_unit for l in lines) or 1.0
+                
+                # Distribusi proporsional berdasarkan nilai total per baris  
+                for line in lines:
+                    line_total = line.quantity * line.price_unit
+                    line_share = (line_total / total_base) * (inv.discount_rate or 0.0)
+                    per_unit_fixed = (line_share / line.quantity) if line.quantity else 0.0
+                    
+                    line.discount_fixed = per_unit_fixed
+                    # Hitung persentase dari fixed discount
+                    line.discount = (per_unit_fixed / line.price_unit * 100.0) if line.price_unit else 0.0
+
+            # Recompute totals & taxes
+            inv._recompute_dynamic_lines(recompute_all_taxes=True)
 
     # def action_post(self):
     #     res = super(AccountInvoice, self).action_post()
@@ -155,11 +192,12 @@ class AccountInvoice(models.Model):
             inv._compute_tax_totals()
 
     def button_dummy(self):
-        self.supply_rate()
+        # Perbaiki bug: panggil method yang benar
+        self._supply_rate()
         return True
 
 
 class AccountInvoiceLine(models.Model):
     _inherit = "account.move.line"
 
-    discount = fields.Float(string='Discount (%)', digits=(16, 20), default=0.0)
+    discount = fields.Float(string='Discount (%)', digits=(16, 2), default=0.0)

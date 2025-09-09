@@ -8,20 +8,21 @@ class SaleOrder(models.Model):
 
 
     type_discount_print = fields.Selection(
-        [('Line', 'Per Product'), ('total', 'Per Total INV')],
+        [('Line', 'Per Product percentage'), ('Line_amount', 'Per Product Amount'), ('total', 'Per Total')],
         string='Type Print Discount ?',
         default='Line')
 
     @api.depends('order_line.price_total')
     def _amount_all(self):
-        """ Compute the total amounts of the SO. """
+        """Gunakan Σ(gross - subtotal) agar dukung fixed & percent."""
         for order in self:
-            amount_untaxed = amount_tax = amount_discount = 0.0
+            amount_untaxed = amount_tax = 0.0
+            amount_discount = 0.0
             for line in order.order_line:
+                gross = line.product_uom_qty * line.price_unit
                 amount_untaxed += line.price_subtotal
                 amount_tax += line.price_tax
-                amount_discount += (line.product_uom_qty *
-                                    line.price_unit * line.discount)/100
+                amount_discount += max(gross - line.price_subtotal, 0.0)
             order.update({
                 'amount_untaxed': amount_untaxed,
                 'amount_tax': amount_tax,
@@ -30,11 +31,10 @@ class SaleOrder(models.Model):
             })
 
     discount_type = fields.Selection(
-        [('perline', 'Per Line'),('percent', 'Percentage'), ('amount', 'Amount')],
-        string='Discount type',
-        readonly=True,
-        states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},
-        default='percent')
+        [('perline','Per Line'), ('percent','Percentage'), ('amount','Amount')],
+        string='Discount type', default='perline',
+        readonly=True, states={'draft':[('readonly',False)], 'sent':[('readonly',False)]}
+    )
     discount_rate = fields.Float('Discount Rate',
                                  digits=dp.get_precision('Account'),
                                  readonly=True,
@@ -54,25 +54,31 @@ class SaleOrder(models.Model):
                                       digits=dp.get_precision('Account'),
                                       track_visibility='always')
 
-    @api.onchange('discount_type', 'discount_rate', 'order_line')
+    @api.onchange('discount_type','discount_rate','order_line')
     def supply_rate(self):
-        """supply discount into order line"""
         for order in self:
-            if order.discount_type == 'percent' and order.discount_rate > 0:
-                for line in order.order_line:
-                    line.discount = order.discount_rate
-            elif order.discount_rate > 0:
-                total = discount = 0.0
-                for line in order.order_line:
-                    total += (line.product_uom_qty * line.price_unit)
-                if order.discount_rate != 0:
-                    discount = (order.discount_rate / total) * 100
-                else:
-                    discount = order.discount_rate
-                for line in order.order_line:
-                    line.discount = discount
-                    new_sub_price = (line.price_unit * (discount / 100))
-                    line.total_discount = line.price_unit - new_sub_price
+            lines = order.order_line.filtered(lambda l: l.display_type in (False, 'product'))
+            if not lines:
+                continue
+
+            if order.discount_type == 'percent':
+                for line in lines:
+                    line.discount = order.discount_rate or 0.0
+                    # Hitung discount_fixed berdasarkan persentase
+                    line.discount_fixed = (line.price_unit * line.discount / 100.0) if line.price_unit else 0.0
+
+            elif order.discount_type == 'amount':
+                total_base = sum(l.product_uom_qty * l.price_unit for l in lines) or 1.0
+                
+                # Distribusi proporsional berdasarkan nilai total per baris
+                for line in lines:
+                    line_total = line.product_uom_qty * line.price_unit
+                    line_share = (line_total / total_base) * (order.discount_rate or 0.0)
+                    per_unit_fixed = (line_share / line.product_uom_qty) if line.product_uom_qty else 0.0
+                    
+                    line.discount_fixed = per_unit_fixed
+                    # Hitung persentase dari fixed discount
+                    line.discount = (per_unit_fixed / line.price_unit * 100.0) if line.price_unit else 0.0
 
     def _prepare_invoice(self, ):
         invoice_vals = super(SaleOrder, self)._prepare_invoice()
@@ -111,6 +117,6 @@ class SaleOrderLine(models.Model):
     """Inherit sale order  line and add fields"""
     _inherit = "sale.order.line"
 
-    discount = fields.Float(string='Discount (%)', digits=(16, 20), default=0.0)
+    discount = fields.Float(string='Discount (%)', digits=(16, 2), default=0.0)
     total_discount = fields.Float(string="Total Discount", default=0.0,
                                   store=True)
