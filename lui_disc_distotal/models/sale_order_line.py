@@ -15,6 +15,18 @@ class SaleOrderLine(models.Model):
         help="Fixed amount discount.",
     )
 
+    price_subtotal_before_discount = fields.Monetary(
+        string='Subtotal Before Discount',
+        compute='_compute_price_subtotal_before_discount',
+        currency_field='currency_id',
+        store=True
+    )
+
+    @api.depends('price_unit', 'product_uom_qty')
+    def _compute_price_subtotal_before_discount(self):
+        for line in self:
+            line.price_subtotal_before_discount = line.price_unit * line.product_uom_qty
+
     @api.constrains("discount_fixed", "discount")
     def _check_discounts(self):
         """Check that the fixed discount and the discount percentage are consistent."""

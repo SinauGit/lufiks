@@ -8,9 +8,13 @@ class SaleOrder(models.Model):
 
 
     type_discount_print = fields.Selection(
-        [('Line', 'Per Product percentage'), ('Line_amount', 'Per Product Amount'), ('total', 'Per Total')],
+        [('Line_before', 'Per Product Percentage with Before Discount '),
+        ('Line_after', 'Per Product Percentage with After Discount '),
+        ('Line_amount_before', 'Per Product Amount with Before Discount'),
+        ('Line_amount_after', 'Per Product Amount with After Discount'),
+        ('total', 'Total SO ')],
         string='Type Print Discount ?',
-        default='Line')
+        default='Line_before')
 
     @api.depends('order_line.price_total')
     def _amount_all(self):
