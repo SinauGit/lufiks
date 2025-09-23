@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sale Order Form View - Add Markup Fields to Order Lines Only -->
+    <record id="view_order_form_markup" model="ir.ui.view">
+        <field name="name">sale.order.form.markup</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Add markup fields to order line tree -->
+            <xpath expr="//field[@name='order_line']//tree//field[@name='price_unit']" position="after">
+                <field name="original_price_unit" optional="hide" string="Original Price"/>
+                <field name="markup_percent" optional="show" string="Markup (%)"/>
+            </xpath>
+            
+            <!-- Add markup fields to order line form -->
+            <xpath expr="//field[@name='order_line']//form//field[@name='price_unit']" position="after">
+                <field name="original_price_unit" string="Original Price"/>
+                <field name="markup_percent" string="Markup (%)"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
