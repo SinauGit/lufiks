@@ -9,7 +9,7 @@ class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
 
     discount_fixed = fields.Monetary(
-        string="Discount (Fixed)",
+        string="Disc(Amount)",
         default=0.0,
         currency_field="currency_id",
         help=(

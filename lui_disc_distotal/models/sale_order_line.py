@@ -10,7 +10,7 @@ class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
     discount_fixed = fields.Float(
-        string="Discount (Fixed)",
+        string="Disc(Amount)",
         digits="Product Price",
         help="Fixed amount discount per unit.",
     )
@@ -26,7 +26,7 @@ class SaleOrderLine(models.Model):
         string="Markup (%)",
         digits=(16, 2),
         default=0.0,
-        help="Markup percentage to be applied to unit price"
+        help="Markup percentage to be applied to unit price (division based)"
     )
 
     original_price_unit = fields.Float(
@@ -37,7 +37,7 @@ class SaleOrderLine(models.Model):
 
     @api.onchange("markup_percent")
     def _onchange_markup_percent(self):
-        """Apply markup percentage to price_unit"""
+        """Apply markup percentage to price_unit using division method"""
         if self.env.context.get('skip_markup_onchange'):
             return
             
@@ -45,14 +45,14 @@ class SaleOrderLine(models.Model):
         if not self.original_price_unit and self.price_unit:
             self.original_price_unit = self.price_unit
             
-        # Hitung price_unit baru berdasarkan markup
+        # Hitung price_unit baru berdasarkan markup (division method)
         if self.original_price_unit:
-            if self.markup_percent:
-                markup_amount = float_round(
-                    self.original_price_unit * (self.markup_percent / 100.0),
+            if self.markup_percent and self.markup_percent > 0:
+                # Pembagian: original_price / (markup_percent / 100)
+                new_price = float_round(
+                    self.original_price_unit / (self.markup_percent / 100.0),
                     precision_digits=self.env["decimal.precision"].precision_get("Product Price")
                 )
-                new_price = self.original_price_unit + markup_amount
             else:
                 new_price = self.original_price_unit
             
@@ -99,7 +99,7 @@ class SaleOrderLine(models.Model):
 
     @api.model
     def create(self, vals_list):
-        """Set original_price_unit on creation and handle markup"""
+        """Set original_price_unit on creation and handle markup with division method"""
         if not isinstance(vals_list, list):
             vals_list = [vals_list]
             
@@ -111,19 +111,18 @@ class SaleOrderLine(models.Model):
             
             # Set original_price_unit jika belum ada
             if price_unit and not original_price_unit:
-                # Jika ada markup, hitung balik original price
-                if markup_percent:
-                    vals['original_price_unit'] = price_unit / (1 + markup_percent / 100.0)
+                # Jika ada markup, hitung balik original price (reverse division)
+                if markup_percent and markup_percent > 0:
+                    vals['original_price_unit'] = price_unit * (markup_percent / 100.0)
                 else:
                     vals['original_price_unit'] = price_unit
             
-            # Apply markup jika ada original_price_unit
-            elif original_price_unit and markup_percent:
-                markup_amount = float_round(
-                    original_price_unit * (markup_percent / 100.0),
+            # Apply markup jika ada original_price_unit (division method)
+            elif original_price_unit and markup_percent and markup_percent > 0:
+                vals['price_unit'] = float_round(
+                    original_price_unit / (markup_percent / 100.0),
                     precision_digits=self.env["decimal.precision"].precision_get("Product Price")
                 )
-                vals['price_unit'] = original_price_unit + markup_amount
                 
             # Sync discount values
             if vals.get('discount') and vals.get('price_unit'):
@@ -140,7 +139,7 @@ class SaleOrderLine(models.Model):
         return super().create(vals_list)
 
     def write(self, vals):
-        """Handle markup when writing values"""
+        """Handle markup when writing values using division method"""
         # Hindari recursive calls
         if self.env.context.get('skip_write_markup'):
             return super().write(vals)
@@ -162,22 +161,21 @@ class SaleOrderLine(models.Model):
                 
                 # Jika belum ada original_price_unit, gunakan current price_unit
                 if not original_price and line.price_unit:
-                    if line.markup_percent:
-                        # Hitung balik dari price_unit saat ini
-                        original_price = line.price_unit / (1 + line.markup_percent / 100.0)
+                    if line.markup_percent and line.markup_percent > 0:
+                        # Hitung balik dari price_unit saat ini (reverse division)
+                        original_price = line.price_unit * (line.markup_percent / 100.0)
                     else:
                         original_price = line.price_unit
                     new_vals['original_price_unit'] = original_price
                 
-                # Calculate new price_unit with markup
+                # Calculate new price_unit with markup (division method)
                 if original_price:
                     markup_percent = new_vals.get('markup_percent', 0.0)
-                    if markup_percent:
-                        markup_amount = float_round(
-                            original_price * (markup_percent / 100.0),
+                    if markup_percent and markup_percent > 0:
+                        new_vals['price_unit'] = float_round(
+                            original_price / (markup_percent / 100.0),
                             precision_digits=self.env["decimal.precision"].precision_get("Product Price")
                         )
-                        new_vals['price_unit'] = original_price + markup_amount
                     else:
                         new_vals['price_unit'] = original_price
             
