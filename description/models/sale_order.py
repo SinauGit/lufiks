@@ -5,12 +5,12 @@ class SaleOrder(models.Model):
     
     up_field = fields.Char(string="Up", help="Field untuk menyimpan informasi Up")
     
-    def action_sync_all_lines(self):
-        """
-        Metode untuk sinkronisasi semua nama baris order dengan invoice line
-        """
-        for order in self:
-            for line in order.order_line:
-                line.sync_name_from_invoice_line()
+    # def action_sync_all_lines(self):
+    #     """
+    #     Metode untuk sinkronisasi semua nama baris order dengan invoice line
+    #     """
+    #     for order in self:
+    #         for line in order.order_line:
+    #             line.sync_name_from_invoice_line()
         
-        return True 
+    #     return True 
