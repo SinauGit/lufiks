@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <!-- Tree View untuk Serial Number Valuation -->
+    <record id="view_serial_number_valuation_tree" model="ir.ui.view">
+        <field name="name">serial.number.valuation.tree</field>
+        <field name="model">stock.lot</field>
+        <field name="arch" type="xml">
+            <tree string="Serial Number Valuation" create="false" edit="false">
+                <field name="product_id" />
+                <field name="name" string="Serial Number" />
+                <field name="inventory_value" sum="Total Inventory Value" />
+                <field name="unit_price" />
+                <field name="input_price" />
+                <field name="input_date" />
+                <field name="location_id" />
+                <field name="product_qty" string="Quantity" />
+                <field name="company_id" groups="base.group_multi_company" />
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View untuk Serial Number Valuation -->
+    <record id="view_serial_number_valuation_form" model="ir.ui.view">
+        <field name="name">serial.number.valuation.form</field>
+        <field name="model">stock.lot</field>
+        <field name="arch" type="xml">
+            <form string="Serial Number Valuation" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group name="product_info">
+                            <field name="company_id" invisible="1" />
+                            <field name="product_id" />
+                            <field name="name" string="Serial Number" />
+                            <field name="product_qty" string="Quantity" />
+                            <field name="location_id" />
+                        </group>
+                        <group name="valuation_info">
+                            <field name="inventory_value" />
+                            <field name="unit_price" />
+                            <field name="input_price" />
+                            <field name="input_date" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Stock Moves" name="stock_moves">
+                            <field name="quant_ids">
+                                <tree>
+                                    <field name="location_id" />
+                                    <field name="quantity" />
+                                    <field name="value" />
+                                    <field name="price_unit" optional="show" />
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View dengan Filter Product -->
+    <record id="view_serial_number_valuation_search" model="ir.ui.view">
+        <field name="name">serial.number.valuation.search</field>
+        <field name="model">stock.lot</field>
+        <field name="arch" type="xml">
+            <search string="Serial Number Valuation">
+                <field name="name" string="Serial Number" filter_domain="[('name','ilike',self)]" />
+                <field name="product_id" />
+                <field name="location_id" />
+                
+                <filter string="With Inventory Value" name="has_value" 
+                        domain="[('inventory_value', '!=', 0)]" />
+                <filter string="Serial Number Only" name="serial_only" 
+                        domain="[('product_id.tracking', '=', 'serial')]" />
+                <filter string="In Stock" name="in_stock" 
+                        domain="[('product_qty', '>', 0)]" />
+                
+                <separator/>
+                
+                <filter string="This Month" name="this_month" 
+                        domain="[('input_date', '&gt;=', (context_today() - relativedelta(months=1)).strftime('%Y-%m-01')),
+                                ('input_date', '&lt;', (context_today() + relativedelta(months=1)).strftime('%Y-%m-01'))]" />
+                <filter string="This Year" name="this_year" 
+                        domain="[('input_date', '&gt;=', (context_today()).strftime('%Y-01-01')),
+                                ('input_date', '&lt;=', (context_today()).strftime('%Y-12-31'))]" />
+                
+                <group expand="0" string="Group By">
+                    <filter string="Product" name="group_product" context="{'group_by':'product_id'}" />
+                    <filter string="Location" name="group_location" context="{'group_by':'location_id'}" />
+                    <filter string="Input Date" name="group_input_date" context="{'group_by':'input_date'}" />
+                    <filter string="Company" name="group_company" context="{'group_by':'company_id'}" groups="base.group_multi_company" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action untuk Serial Number Valuation -->
+    <record id="action_serial_number_valuation" model="ir.actions.act_window">
+        <field name="name">Serial Number Valuation</field>
+        <field name="res_model">stock.lot</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_serial_number_valuation_tree" />
+        <field name="search_view_id" ref="view_serial_number_valuation_search" />
+        <field name="context">{
+            'search_default_serial_only': 1,
+            'search_default_in_stock': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No serial numbers found
+            </p>
+            <p>
+                This view shows the valuation of serial numbers.<br/>
+                You can filter by product to see the value of each serial number.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Item di Inventory / Reporting -->
+    <menuitem
+        id="menu_serial_number_valuation"
+        name="Serial Number Valuation"
+        parent="stock.stock_move_line_menu"
+        action="action_serial_number_valuation"
+        sequence="120" />
+
+</odoo>

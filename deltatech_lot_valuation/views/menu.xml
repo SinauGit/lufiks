@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Menu Item di Inventory / Reporting -->
+    <menuitem
+        id="menu_serial_number_valuation"
+        name="Serial Number Valuation"
+        parent="stock.menu_warehouse_report"
+        action="action_serial_number_valuation"
+        sequence="120" />
+
+</odoo>
