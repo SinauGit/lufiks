@@ -20,6 +20,13 @@ class StockPicking(models.Model):
                         values["input_price"] = move_line.move_id.price_unit
                         values["unit_price"] = move_line.move_id.price_unit
                         values["input_date"] = move_line.picking_id.scheduled_date
+                        
+                        # Tambahkan Purchase Order info
+                        if move_line.move_id.purchase_line_id:
+                            purchase_order = move_line.move_id.purchase_line_id.order_id
+                            values["purchase_order_id"] = purchase_order.id
+                            values["purchase_order_name"] = purchase_order.name
+                        
                         if move_line.product_id.tracking == "serial":
                             values["location_id"] = move_line.location_dest_id.id
                         move_line.lot_id.write(values)

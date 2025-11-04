@@ -9,6 +9,7 @@
             <tree string="Serial Number Valuation" create="false" edit="false">
                 <field name="product_id" />
                 <field name="name" string="Serial Number" />
+                <field name="purchase_order_name" string="Purchase Order" optional="show" />
                 <field name="inventory_value" sum="Total Inventory Value" />
                 <field name="unit_price" />
                 <field name="input_price" />
@@ -40,6 +41,7 @@
                             <field name="unit_price" />
                             <field name="input_price" />
                             <field name="input_date" />
+                            <field name="purchase_order_id" />
                         </group>
                     </group>
                     <notebook>
@@ -68,6 +70,7 @@
                 <field name="name" string="Serial Number" filter_domain="[('name','ilike',self)]" />
                 <field name="product_id" />
                 <field name="location_id" />
+                <field name="purchase_order_name" string="Purchase Order" filter_domain="[('purchase_order_name','ilike',self)]" />
                 
                 <filter string="With Inventory Value" name="has_value" 
                         domain="[('inventory_value', '!=', 0)]" />
@@ -87,6 +90,7 @@
                 
                 <group expand="0" string="Group By">
                     <filter string="Product" name="group_product" context="{'group_by':'product_id'}" />
+                    <filter string="Purchase Order" name="group_po" context="{'group_by':'purchase_order_name'}" />
                     <filter string="Location" name="group_location" context="{'group_by':'location_id'}" />
                     <filter string="Input Date" name="group_input_date" context="{'group_by':'input_date'}" />
                     <filter string="Company" name="group_company" context="{'group_by':'company_id'}" groups="base.group_multi_company" />
@@ -121,7 +125,7 @@
     <menuitem
         id="menu_serial_number_valuation"
         name="Serial Number Valuation"
-        parent="stock.stock_move_line_menu"
+        parent="stock.menu_warehouse_report"
         action="action_serial_number_valuation"
         sequence="120" />
 

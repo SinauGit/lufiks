@@ -11,6 +11,10 @@
                         <field name="inventory_value" readonly="1" />
                         <field name="input_price" readonly="1" />
                         <field name="unit_price" />
+                        <field name="purchase_order_id" readonly="1" />
+                    </group>
+                    <group>
+                        <field name="input_date" readonly="1" />
                     </group>
                 </group>
             </group>
@@ -27,6 +31,7 @@
             <field name="company_id" position="after">
                 <field name="inventory_value" sum="1" />
                 <field name="unit_price" />
+                <field name="purchase_order_name" optional="hide" />
             </field>
         </field>
     </record>

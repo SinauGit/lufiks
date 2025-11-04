@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <!-- Tambahkan button Recompute di Form View -->
+    <record id="view_lot_recompute_form" model="ir.ui.view">
+        <field name="name">lot.recompute.form.view</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_form" />
+        <field name="arch" type="xml">
+            <form position="inside">
+                <header>
+                    <button name="action_recompute_unit_price" 
+                            string="Recompute Price" 
+                            type="object" 
+                            class="btn-secondary"
+                            attrs="{'invisible': [('unit_price', '!=', 0)]}" />
+                </header>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action untuk Recompute All dari Tree View -->
+    <record id="action_recompute_all_lot_prices" model="ir.actions.server">
+        <field name="name">Recompute Unit Price</field>
+        <field name="model_id" ref="stock.model_stock_lot" />
+        <field name="binding_model_id" ref="stock.model_stock_lot" />
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    records.action_recompute_unit_price()
+        </field>
+    </record>
+
+    <!-- Menu Item untuk Recompute All -->
+    <record id="action_recompute_all_unit_prices" model="ir.actions.server">
+        <field name="name">Recompute All Unit Prices</field>
+        <field name="model_id" ref="stock.model_stock_lot" />
+        <field name="state">code</field>
+        <field name="code">
+action = model.action_recompute_all_unit_price()
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_recompute_all_unit_prices"
+        name="Recompute All Serial/Lot Prices"
+        parent="stock.menu_stock_config_settings"
+        action="action_recompute_all_unit_prices"
+        sequence="100" />
+
+</odoo>
