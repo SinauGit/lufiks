@@ -16,9 +16,25 @@ class StockPicking(models.Model):
                 if move_line.lot_id:
                     values = {}
                     if move_line.location_id.usage == "supplier" and move_line.location_dest_id.usage in ["internal"]:
-                        values["inventory_value"] = move_line.move_id.price_unit * move_line.qty_done
-                        values["input_price"] = move_line.move_id.price_unit
-                        values["unit_price"] = move_line.move_id.price_unit
+                        # Ambil unit_cost dari SVL yang sudah dibuat
+                        svl = self.env['stock.valuation.layer'].search([
+                            ('stock_move_id', '=', move_line.move_id.id),
+                            ('quantity', '>', 0)
+                        ], limit=1)
+                        
+                        if svl and svl.quantity:
+                            unit_cost = abs(svl.value / svl.quantity)
+                        else:
+                            # Fallback ke price_unit jika SVL tidak ditemukan
+                            unit_cost = move_line.move_id.price_unit
+                        
+                        if move_line.product_id.tracking == "serial":
+                            values["inventory_value"] = unit_cost * move_line.qty_done
+                        else:
+                            values["inventory_value"] = unit_cost * move_line.qty_done
+                            
+                        values["input_price"] = unit_cost
+                        values["unit_price"] = unit_cost
                         values["input_date"] = move_line.picking_id.scheduled_date
                         
                         # Tambahkan Purchase Order info
