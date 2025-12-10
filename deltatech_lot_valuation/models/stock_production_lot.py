@@ -44,8 +44,18 @@ class ProductionLot(models.Model):
             ], order='date asc', limit=1)
 
             if move_line:
-                # Ambil price dari move
-                price_unit = move_line.move_id.price_unit
+                # Ambil unit_cost dari SVL yang sudah dibuat
+                svl = self.env['stock.valuation.layer'].search([
+                    ('stock_move_id', '=', move_line.move_id.id),
+                    ('quantity', '>', 0)
+                ], limit=1)
+                
+                if svl and svl.quantity:
+                    price_unit = abs(svl.value / svl.quantity)
+                else:
+                    # Fallback ke price_unit jika SVL tidak ditemukan
+                    price_unit = move_line.move_id.price_unit
+                    
                 qty_done = move_line.qty_done
                 
                 # Cari purchase order dari move
