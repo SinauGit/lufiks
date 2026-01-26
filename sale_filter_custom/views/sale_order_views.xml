@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- ========================================== -->
+    <!-- SALES ORDER FILTERS -->
+    <!-- ========================================== -->
+    <record id="view_sales_order_filter_inherit_custom" model="ir.ui.view">
+        <field name="name">sale.order.search.filter.inherit.custom</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_view_search_inherit_sale"/>
+        <field name="arch" type="xml">
+            
+            <!-- Override My Orders filter string to My All SO -->
+            <filter name="my_sale_orders_filter" position="attributes">
+                <attribute name="string">My All SO</attribute>
+            </filter>
+            
+            <!-- Add new custom filters after My Orders filter -->
+            <filter name="my_sale_orders_filter" position="after">
+                <separator/>
+                <filter string="My SO This Year" name="my_orders_this_year" 
+                        domain="[('user_id', '=', uid), ('date_order', '&gt;=', context_today().strftime('%Y-01-01')), ('date_order', '&lt;=', context_today().strftime('%Y-12-31'))]" 
+                        help="My sales orders in current year"/>
+                <filter string="All SO This Year" name="all_orders_this_year" 
+                        domain="[('date_order', '&gt;=', context_today().strftime('%Y-01-01')), ('date_order', '&lt;=', context_today().strftime('%Y-12-31'))]" 
+                        help="All sales orders from all salespersons in current year"/>
+            </filter>
+            
+        </field>
+    </record>
+    
+    <!-- Set default filter for Sales Orders -->
+    <record id="sale.action_orders" model="ir.actions.act_window">
+        <field name="context">{
+            'search_default_my_orders_this_year': 1,
+        }</field>
+    </record>
+    
+    
+    <!-- ========================================== -->
+    <!-- QUOTATION FILTERS -->
+    <!-- ========================================== -->
+    <record id="view_quotation_filter_inherit_custom" model="ir.ui.view">
+        <field name="name">sale.order.quotation.search.filter.inherit.custom</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_view_search_inherit_quotation"/>
+        <field name="arch" type="xml">
+            
+            <!-- Override My Quotation filter string to My All Quotation -->
+            <filter name="my_quotation" position="attributes">
+                <attribute name="string">My All Quotation</attribute>
+            </filter>
+            
+            <!-- Add new custom filters after sales filter -->
+            <filter name="sales" position="after">
+                <separator/>
+                <filter string="My Quotation This Year" name="my_quotation_this_year" 
+                        domain="[('user_id', '=', uid), ('date_order', '&gt;=', context_today().strftime('%Y-01-01')), ('date_order', '&lt;=', context_today().strftime('%Y-12-31')), ('state', 'in', ('draft', 'sent'))]" 
+                        help="My quotations in current year"/>
+                <filter string="All Quotation This Year" name="all_quotation_this_year" 
+                        domain="[('date_order', '&gt;=', context_today().strftime('%Y-01-01')), ('date_order', '&lt;=', context_today().strftime('%Y-12-31')), ('state', 'in', ('draft', 'sent'))]" 
+                        help="All quotations from all salespersons in current year"/>
+            </filter>
+            
+        </field>
+    </record>
+    
+    <!-- Set default filter for Quotations -->
+    <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
+        <field name="context">{
+            'search_default_my_quotation_this_year': 1,
+        }</field>
+    </record>
+    
+</odoo>
